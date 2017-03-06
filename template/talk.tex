@@ -1,0 +1,41 @@
+\documentclass[10pt]{beamer}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+\usepackage{listings}
+\begin{document}
+\title{This is a title}  
+\author{Christian Blume}
+\date{\today} 
+\begin{frame}
+\titlepage
+\end{frame}
+
+\lstset{language=C++,
+  basicstyle=\ttfamily,
+  keywordstyle=\color{blue}\ttfamily,
+  stringstyle=\color{red}\ttfamily,
+  commentstyle=\color{gray}\ttfamily,
+  breakatwhitespace=true,
+  keepspaces=true,
+  showstringspaces=false,
+  columns=fullflexible,
+  breaklines=true,
+  tabsize=3, 
+  showstringspaces=false,
+  extendedchars=true,
+  morecomment=[l][\color{magenta}]{\#}
+}
+
+\begin{frame}[fragile]\frametitle{A Slide} 
+some text
+
+\begin{lstlisting}
+void func(int x) {
+  // code ...
+}
+\end{lstlisting}
+
+\lstinline$std::unique_ptr // inline$
+\end{frame}
+
+\end{document}
