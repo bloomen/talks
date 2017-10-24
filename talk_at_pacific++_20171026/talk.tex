@@ -361,7 +361,7 @@ classic approach:
 
 std::async approach:
 \begin{itemize}
-\item Already makes codes much simpler
+\item Already makes code much simpler
 \item Gives up control of which thread is used to run the operation
 \item Cannot be used to model dependencies (Problem 2 cannot be tackled)
 \end{itemize}
@@ -611,11 +611,93 @@ return t;
 \end{frame}
 
 \begin{frame}[fragile]
+\frametitle{transwarp \lstinline{executor} interface}
+\begin{lstlisting}
+class executor {
+public:
+
+virtual ~executor() = default;
+
+virtual std::string get_name() const = 0;
+
+virtual void execute(const std::function<void()>& functor, 
+                     const std::shared_ptr<tw::node>& node) = 0;
+};
+\end{lstlisting}
+\begin{itemize}
+\item \lstinline{functor} is the function to be run
+\item \lstinline{node} is a container carrying meta-data of the current task
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{transwarp \lstinline{sequential} executor}
+\begin{lstlisting}
+class sequential : public tw::executor {
+public:
+
+std::string get_name() const override {
+    return "transwarp::sequential";
+}
+
+void execute(const std::function<void()>& functor, 
+             const std::shared_ptr<tw::node>&) override {
+    functor(); // run on same thread as the call to schedule()
+}
+
+};
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{transwarp \lstinline{parallel} executor}
+\begin{lstlisting}
+class parallel : public tw::executor {
+public:
+
+explicit parallel(std::size_t n_threads)
+: pool_(n_threads)
+{}
+
+void execute(const std::function<void()>& functor, 
+             const std::shared_ptr<tw::node>&) override {
+    pool_.push(functor); // push into the thread pool
+}
+
+private:
+    tw::detail::thread_pool pool_; // locks to push/pop functors
+};
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{A lock-free single-thread executor}
+\begin{lstlisting}
+void execute(/* ... */) override {
+    q_.push(functor); // push into lock-free queue
+}
+void worker() { // is run on the thread
+    for (;;) {
+        std::function<void()> functor;
+        bool success = false;
+        while (!success && !done_) success = q_.pop(functor);
+        if (!success && done_) break;
+        functor(); // run the functor
+    }
+}
+std::atomic_bool done_(false);
+boost::lockfree::spsc_queue<std::function<void()>> q_(1000);
+std::thread thread_;
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
 \frametitle{Conclusions}
 We've seen
 \begin{itemize}
 \item two very simple concurrency problems
 \item a real-world case study from statistics
+\item how to define custom executors
 \end{itemize}
 \bigskip
 
@@ -625,9 +707,8 @@ Take away
 \item task-based concurrency is orthogonal to threads
 \item futures in current standard are pretty weak (hopefully better in C\texttt{++}20)
 \item Boost futures allow for continuations with custom executors
-\item transwarp further simplifies task-based concurrency 
 \item transwarp provides a task-graph for multiple invocations
-\item other great libraries: HPX, TBB, Stlab, etc.
+\item executors can be a powerful tool to schedule tasks
 \end{itemize}
 \end{frame}
 
