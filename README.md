@@ -1,3 +1,9 @@
+**December 3, 2019 at Auckland C++ Meetup**
+
+[`A quick intro to MEGA’s open-source SDK`](megasdk_auckland_cppmeetup_20191203/megasdk_auckland_cppmeetup_20191203.pdf)
+
+- - - -
+
 **October 26, 2017 at Pacific++**
 
 [`Using tasks to simplify concurrency in modern C++`](talk_at_pacificplusplus_20171026/talk_at_pacificplusplus_20171026.pdf)
